@@ -10,6 +10,7 @@ import com.jogamp.opengl.util.glsl.*;
 public class M01_GLEventListener implements GLEventListener {
   
   private static final boolean DISPLAY_SHADERS = false;
+
     
   public M01_GLEventListener(Camera camera) {
     this.camera = camera;
@@ -64,8 +65,11 @@ public class M01_GLEventListener implements GLEventListener {
    */
    
   private Camera camera;
-  private Model tt1, cube, sphere, lightBase, lightPole, lightSupport, lightSocket, mobBase, mob;
+  private Model tt1, cube, sphere, lightBase, lightPole, lightSupport, lightSocket, mobBase, mob, wallBack;
   private Light light;
+  private SGNode robotRoot;
+  private float xPosition = 0;
+  private TransformNode translateX, robotMoveTranslate, footRotate;
 
   private void disposeModels(GL3 gl) {
     tt1.dispose(gl);
@@ -94,6 +98,12 @@ public class M01_GLEventListener implements GLEventListener {
     Mat4 modelMatrix = Mat4Transform.scale(32,1f,32);
     tt1 = new Model(gl, camera, light, shader, material, modelMatrix, m, textureId0);
 
+    m = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
+    shader = new Shader(gl, "vs_tt_05.txt", "fs_tt_05.txt");
+     material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
+    modelMatrix = Mat4.multiply(Mat4Transform.scale(32,32f,1), Mat4Transform.translate(0,32f,0));
+    wallBack = new Model(gl, camera, light, shader, material, modelMatrix, m, textureId0);
+
     m = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
     shader = new Shader(gl, "vs_cube_04.txt", "fs_cube_04.txt");
     material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
@@ -118,14 +128,14 @@ public class M01_GLEventListener implements GLEventListener {
 
     //LIGHTBASE FROM HERE
     m = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
-//    shader = new Shader(gl, "vs_tt_05.txt", "fs_tt_05.txt");
-//    material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
+    shader = new Shader(gl, "vs_tt_05.txt", "fs_tt_05.txt");
+    material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
     modelMatrix = Mat4.multiply(Mat4Transform.scale(4,2,4), Mat4Transform.translate(3.5f,0.5f,0));
     lightBase = new Model(gl, camera, light, shader, material, modelMatrix, m, textureId1);
 
     m = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
-//    shader = new Shader(gl, "vs_tt_05.txt", "fs_tt_05.txt");
-//    material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
+    shader = new Shader(gl, "vs_tt_05.txt", "fs_tt_05.txt");
+    material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
     modelMatrix = Mat4.multiply(Mat4Transform.scale(0.5f,15,0.5f), Mat4Transform.translate(28,0.6f,0));
     lightPole = new Model(gl, camera, light, shader, material, modelMatrix, m, textureId1);
 
@@ -145,16 +155,117 @@ public class M01_GLEventListener implements GLEventListener {
 
     //Mobile phone
     m = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
-//    shader = new Shader(gl, "vs_tt_05.txt", "fs_tt_05.txt");
-//    material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
+    shader = new Shader(gl, "vs_tt_05.txt", "fs_tt_05.txt");
+    material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
     modelMatrix = Mat4.multiply(Mat4Transform.scale(6,1,6), Mat4Transform.translate(1,0.5f,-2.25f));
     mobBase = new Model(gl, camera, light, shader, material, modelMatrix, m, textureId1);
 
     m = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
-//    shader = new Shader(gl, "vs_tt_05.txt", "fs_tt_05.txt");
-//    material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
+    shader = new Shader(gl, "vs_tt_05.txt", "fs_tt_05.txt");
+    material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
     modelMatrix = Mat4.multiply(Mat4Transform.scale(4,6,1), Mat4Transform.translate(1.5f,0.6f,-12f));
     mob = new Model(gl, camera, light, shader, material, modelMatrix, m, textureId1);
+
+    // robot
+
+    float bodyHeight = 2f;
+    float bodyWidth = 2f;
+    float bodyDepth = 1f;
+
+    float headScale = 2f;
+    float headHeight = bodyHeight + 2;
+    float earScale = 1;
+    float earSize = 0.5f;
+    float earMove = 0.9f;
+
+    float noseScale = 0.5f;
+    float noseHeight = headHeight;
+
+
+
+    float footSize = 1f;
+    float footScale = 1f;
+
+    robotRoot = new NameNode("root");
+    robotMoveTranslate = new TransformNode("robot transform",Mat4Transform.translate(xPosition - 10,0,0));
+
+    TransformNode robotTranslate = new TransformNode("robot transform",Mat4Transform.translate(0, footSize,0));
+
+    NameNode body = new NameNode("body");
+    Mat4 mat = Mat4Transform.scale(bodyWidth,bodyHeight,bodyDepth);
+    mat = Mat4.multiply(mat, Mat4Transform.translate(0,0.5f,0));
+    TransformNode bodyTransform = new TransformNode("body transform", mat);
+    ModelNode bodyShape = new ModelNode("Cube(body)", cube);
+
+    NameNode head = new NameNode("head");
+    mat = new Mat4(1);
+    mat = Mat4.multiply(mat, Mat4Transform.translate(0,bodyHeight,0));
+    mat = Mat4.multiply(mat, Mat4Transform.scale(headScale,headScale,headScale));
+    mat = Mat4.multiply(mat, Mat4Transform.translate(0,0.5f,0));
+    TransformNode headTransform = new TransformNode("head transform", mat);
+    ModelNode headShape = new ModelNode("Sphere(head)", sphere);
+
+    NameNode leftEar = new NameNode("left ear");
+    mat = new Mat4(1);
+    mat = Mat4.multiply(mat, Mat4Transform.translate(0,headHeight,0));
+    mat = Mat4.multiply(mat, Mat4Transform.scale(earScale,earScale,earScale));
+    mat = Mat4.multiply(mat, Mat4Transform.translate(-earMove,0f,0));
+    TransformNode leftEarTransform = new TransformNode("ear transform", mat);
+    ModelNode leftEarShape = new ModelNode("Sphere(ear)", sphere);
+
+    NameNode rightEar = new NameNode("right ear");
+    mat = new Mat4(1);
+    mat = Mat4.multiply(mat, Mat4Transform.translate(0,headHeight,0));
+    mat = Mat4.multiply(mat, Mat4Transform.scale(earScale,earScale,earScale));
+    mat = Mat4.multiply(mat, Mat4Transform.translate(earMove,0f,0));
+    TransformNode rightEarTransform = new TransformNode("ear transform", mat);
+    ModelNode rightEarShape = new ModelNode("Sphere(ear)", sphere);
+
+    NameNode nose = new NameNode("nose");
+    mat = new Mat4(1);
+    mat = Mat4.multiply(mat, Mat4Transform.translate(0,noseHeight,0));
+    mat = Mat4.multiply(mat, Mat4Transform.scale(noseScale,noseScale,noseScale));
+    mat = Mat4.multiply(mat, Mat4Transform.translate(0,-headScale*0.9f,1.7f));
+    TransformNode noseTransform = new TransformNode("nose transform", mat);
+    ModelNode noseShape = new ModelNode("Sphere(ear)", sphere);
+
+
+
+
+    NameNode foot = new NameNode("foot");
+    mat = new Mat4(1);
+    mat = Mat4.multiply(mat, Mat4Transform.translate(bodyWidth-0.5f,0,0));
+    mat = Mat4.multiply(mat, Mat4Transform.rotateAroundX(180));
+    mat = Mat4.multiply(mat, Mat4Transform.scale(footScale,footSize,footScale));
+    mat = Mat4.multiply(mat, Mat4Transform.translate(-1.5f,0.5f,0));
+    TransformNode footTransform = new TransformNode("foot transform", mat);
+    ModelNode footShape = new ModelNode("sphere", sphere);
+
+    robotRoot.addChild(robotMoveTranslate);
+    robotMoveTranslate.addChild(robotTranslate);
+    robotTranslate.addChild(body);
+    body.addChild(bodyTransform);
+    bodyTransform.addChild(bodyShape);
+    body.addChild(head);
+    head.addChild(headTransform);
+    headTransform.addChild(headShape);
+    head.addChild(leftEar);
+    leftEar.addChild(leftEarTransform);
+    leftEarTransform.addChild(leftEarShape);
+    head.addChild(rightEar);
+    rightEar.addChild(rightEarTransform);
+    rightEarTransform.addChild(rightEarShape);
+    head.addChild(nose);
+    nose.addChild(noseTransform);
+    noseTransform.addChild(noseShape);
+    body.addChild(foot);
+    foot.addChild(footTransform);
+    footTransform.addChild(footShape);
+
+
+    robotRoot.update();  // IMPORTANT - don't forget this
+    //robotRoot.print(0, false);
+    //System.exit(0);
 
 
 
@@ -175,6 +286,9 @@ public class M01_GLEventListener implements GLEventListener {
     lightSocket.render(gl);
     mobBase.render(gl);
     mob.render(gl);
+    wallBack.render(gl);
+
+    robotRoot.draw(gl);
   }
 
   // The light's postion is continually being changed, so needs to be calculated for each frame.
