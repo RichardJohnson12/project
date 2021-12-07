@@ -66,15 +66,15 @@ public class M01_GLEventListener implements GLEventListener {
    
   private Camera camera;
   private Model tt1, cube, sphere, lightBase, lightPole, lightSupport, lightSocket, mobBase, mob, wallBack, wallLeft;
-  private Light light;
+  private Light light, leftLight, rightLight;
   private SGNode robotRoot;
   private float xPosition = 0;
   private TransformNode translateX, robotMoveTranslate, footRotate;
 
   private void disposeModels(GL3 gl) {
-    tt1.dispose(gl);
-    cube.dispose(gl);
-    sphere.dispose(gl);
+//    tt1.dispose(gl);
+//    cube.dispose(gl);
+//    sphere.dispose(gl);
     light.dispose(gl);
   }
   
@@ -111,11 +111,10 @@ public class M01_GLEventListener implements GLEventListener {
     m = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
     shader = new Shader(gl, "vs_tt_05.txt", "fs_tt_05.txt");
     material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
-    modelMatrix = Mat4.multiply(Mat4Transform.rotateAroundX(90),Mat4Transform.scale(32,16f,1) );
-//    modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.translate(0,0,0.5f));
-//    modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(32,1f,16));
-  modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.rotateAroundZ(-90));
-    modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.translate(0, -0.5f, 0));
+    modelMatrix = Mat4.multiply(Mat4Transform.scale(16,1f,16), modelMatrix);
+    modelMatrix = Mat4.multiply(Mat4Transform.rotateAroundY(90), modelMatrix);
+    modelMatrix = Mat4.multiply(Mat4Transform.rotateAroundZ(-90), modelMatrix);
+    modelMatrix = Mat4.multiply(Mat4Transform.translate(-16*0.5f,16*0.5f,0), modelMatrix);
     wallLeft = new Model(gl, camera, light, shader, material, modelMatrix, m, textureId0);
 
     m = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
@@ -159,11 +158,11 @@ public class M01_GLEventListener implements GLEventListener {
     modelMatrix = Mat4.multiply(Mat4Transform.scale(5f,0.5f,0.5f), Mat4Transform.translate(2.25f,32.5f,0));
     lightSupport = new Model(gl, camera, light, shader, material, modelMatrix, m, textureId1);
 
-    m = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
-    shader = new Shader(gl, "vs_tt_05.txt", "fs_tt_05.txt");
-    material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
-    modelMatrix = Mat4.multiply(Mat4Transform.scale(1,1,1), Mat4Transform.translate(9,15.5f,0));
-    lightSocket = new Model(gl, camera, light, shader, material, modelMatrix, m, textureId1);
+//    m = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
+//    shader = new Shader(gl, "vs_tt_05.txt", "fs_tt_05.txt");
+//    material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
+//    modelMatrix = Mat4.multiply(Mat4Transform.scale(1,1,1), Mat4Transform.translate(9,15.5f,0));
+//    lightSocket = new Model(gl, camera, light, shader, material, modelMatrix, m, textureId1);
 
    //Lightbulb needs doing
 
@@ -299,7 +298,7 @@ public class M01_GLEventListener implements GLEventListener {
     lightBase.render(gl);
     lightPole.render(gl);
     lightSupport.render(gl);
-    lightSocket.render(gl);
+//    lightSocket.render(gl);
     mobBase.render(gl);
     mob.render(gl);
 
@@ -310,9 +309,14 @@ public class M01_GLEventListener implements GLEventListener {
   // The light's postion is continually being changed, so needs to be calculated for each frame.
   private Vec3 getLightPosition() {
     double elapsedTime = getSeconds()-startTime;
-    float x = 5.0f*(float)(Math.sin(Math.toRadians(elapsedTime*50)));
-    float y = 2.7f;
-    float z = 5.0f*(float)(Math.cos(Math.toRadians(elapsedTime*50)));
+//    float x = 5.0f*(float)(Math.sin(Math.toRadians(elapsedTime*50)));
+//    float y = 20f;
+//    float z = 5.0f*(float)(Math.cos(Math.toRadians(elapsedTime*50)));
+//    return new Vec3(x,y,z);
+
+    float x = 9;
+    float y = 15.5f;
+    float z = 1f*(float)(Math.cos(Math.toRadians(elapsedTime*50)));
     return new Vec3(x,y,z);
     
     //return new Vec3(5f,3.4f,5f);  // use to set in a specific position for testing
