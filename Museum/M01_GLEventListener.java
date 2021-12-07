@@ -65,7 +65,7 @@ public class M01_GLEventListener implements GLEventListener {
    */
    
   private Camera camera;
-  private Model tt1, cube, sphere, lightBase, lightPole, lightSupport, lightSocket, mobBase, mob, wallBack;
+  private Model tt1, cube, sphere, lightBase, lightPole, lightSupport, lightSocket, mobBase, mob, wallBack, wallLeft;
   private Light light;
   private SGNode robotRoot;
   private float xPosition = 0;
@@ -88,7 +88,9 @@ public class M01_GLEventListener implements GLEventListener {
     int[] textureId2 = TextureLibrary.loadTexture(gl, "textures/container2_specular.jpg");
     int[] textureId3 = TextureLibrary.loadTexture(gl, "textures/jade.jpg");
     int[] textureId4 = TextureLibrary.loadTexture(gl, "textures/jade_specular.jpg");
-    
+    int[] phoneGraphic = TextureLibrary.loadTexture(gl, "textures/phoneGraphic.jpg");
+    int[] granite = TextureLibrary.loadTexture(gl, "textures/granite.jpg");
+    int[] backWall = TextureLibrary.loadTexture(gl, "textures/backWall.jpg");
     light = new Light(gl);
     light.setCamera(camera);
     
@@ -101,8 +103,20 @@ public class M01_GLEventListener implements GLEventListener {
     m = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
     shader = new Shader(gl, "vs_tt_05.txt", "fs_tt_05.txt");
      material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
-    modelMatrix = Mat4.multiply(Mat4Transform.scale(32,32f,1), Mat4Transform.translate(0,32f,0));
+    modelMatrix = Mat4.multiply(Mat4Transform.scale(32,16f,1),Mat4Transform.rotateAroundX(90));
+    modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.translate(0,-16,-0.5f));
+
     wallBack = new Model(gl, camera, light, shader, material, modelMatrix, m, textureId0);
+
+    m = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
+    shader = new Shader(gl, "vs_tt_05.txt", "fs_tt_05.txt");
+    material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
+    modelMatrix = Mat4.multiply(Mat4Transform.rotateAroundX(90),Mat4Transform.scale(32,16f,1) );
+//    modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.translate(0,0,0.5f));
+//    modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(32,1f,16));
+  modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.rotateAroundZ(-90));
+    modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.translate(0, -0.5f, 0));
+    wallLeft = new Model(gl, camera, light, shader, material, modelMatrix, m, textureId0);
 
     m = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
     shader = new Shader(gl, "vs_cube_04.txt", "fs_cube_04.txt");
@@ -158,13 +172,13 @@ public class M01_GLEventListener implements GLEventListener {
     shader = new Shader(gl, "vs_tt_05.txt", "fs_tt_05.txt");
     material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
     modelMatrix = Mat4.multiply(Mat4Transform.scale(6,1,6), Mat4Transform.translate(1,0.5f,-2.25f));
-    mobBase = new Model(gl, camera, light, shader, material, modelMatrix, m, textureId1);
+    mobBase = new Model(gl, camera, light, shader, material, modelMatrix, m, granite);
 
     m = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
     shader = new Shader(gl, "vs_tt_05.txt", "fs_tt_05.txt");
     material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
     modelMatrix = Mat4.multiply(Mat4Transform.scale(4,6,1), Mat4Transform.translate(1.5f,0.6f,-12f));
-    mob = new Model(gl, camera, light, shader, material, modelMatrix, m, textureId1);
+    mob = new Model(gl, camera, light, shader, material, modelMatrix, m, phoneGraphic);
 
     // robot
 
@@ -278,6 +292,8 @@ public class M01_GLEventListener implements GLEventListener {
     light.render(gl);
 
     tt1.render(gl);
+    wallBack.render(gl);
+    wallLeft.render(gl);
     cube.render(gl);
     sphere.render(gl);
     lightBase.render(gl);
@@ -286,7 +302,7 @@ public class M01_GLEventListener implements GLEventListener {
     lightSocket.render(gl);
     mobBase.render(gl);
     mob.render(gl);
-    wallBack.render(gl);
+
 
     robotRoot.draw(gl);
   }
